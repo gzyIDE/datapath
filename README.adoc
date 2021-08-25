@@ -1,1 +1,31 @@
-= Datapath IP generator
+= Datapath module generator
+Chisel based datapath module generator
+
+== unsigned integer divider
+=== div_base
+*div_base* is fully pipelined unsigned integer divider module with
+a variable data width and pipeline stages.
+It also has user input to propagate input sign bit or operation code
+through the pipeline. +
+This module is only a baseline of parameterized divider.
+In order to output verilog, call _./script/div_config.sh_ via Makefile.
+
+=== divider generation
+You can output divider using Makefile.
+However, note that the target module name must keep strict name convention. +
+Module name consists of datapath width, latency (pipeline stages) and 
+bit width of user data.
+When datapath width is 64 bit, latency is 8 clock cycles and user data is 5 bit,
+the module name is *div64_l8_u5_gznk*. 
+(_gznk_ is short for gizaneko, which does not so profound meanings)
+
+=== signed integer operation
+Signed integer is not supported by *div_base* considering implementation complexity.
+You can extend the module to support signed integer divider, using absolute value 
+of signed value as dividend/divisor inputs and their sign bits as user input.
+Combining the unsigned division result and dividend/divisor sign bits to
+calculate sign bit of division results.
+
+== Work in Progress
+Current support is limited to unsigned integer divider.
+I am planning to add support for other operations in integer and floating point format.
