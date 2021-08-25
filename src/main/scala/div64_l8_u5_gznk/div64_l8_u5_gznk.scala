@@ -1,9 +1,9 @@
-package div_base
+package div64_l8_u5_gznk
 
 import chisel3._
 import chisel3.stage.ChiselStage
 
-class DivBase(inData: Int, usrData: Int, stages: Int) extends Module {
+class div64_l8_u5_gznk(inData: Int, usrData: Int, stages: Int) extends Module {
   val io = IO(new Bundle {
     val in1 = Input(UInt(inData.W))
     val in2 = Input(UInt(inData.W))
@@ -100,4 +100,7 @@ class DivBase(inData: Int, usrData: Int, stages: Int) extends Module {
   io.out_usr := usr_vec(inData-1)
   io.div_by_zero := in2_vec(inData-1) === 0.U(inData.W)
   io.out_en := op_valid(inData-1)
+}
+object div64_l8_u5_gznk_driver extends App {
+  (new ChiselStage).emitVerilog(new div64_l8_u5_gznk(64, 5, 8), args)
 }

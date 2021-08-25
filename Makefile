@@ -1,6 +1,7 @@
 BUILD=build
 RTL=rtl
 SRC=src/main/scala
+SCRIPT=script
 
 vpath %.v	= $(RTL)
 
@@ -8,7 +9,7 @@ vpath %.v	= $(RTL)
 #all: GCD.v
 #all: Pipe.v
 #all: DivBase.v
-all: div64_l8.v
+all: div64_l8_u5_gznk.v
 
 GCD.v: $(SRC)/gcd/GCD.scala
 	mkdir -p rtl
@@ -25,9 +26,10 @@ DivBase.v: $(SRC)/div_base/DivBase.scala
 	sbt "runMain div_base.DivBaseDriver --target-dir $(BUILD)"
 	cp $(BUILD)/$@ $(RTL)
 
-div64_l8.v: $(SRC)/div64_l8/div64_l8.scala $(SRC)/div_base/DivBase.scala
+div%_gznk.v: $(SRC)/div_base/DivBase.scala
 	mkdir -p rtl
-	sbt "runMain div64_l8.div64_l8_driver --target-dir $(BUILD)"
+	$(SCRIPT)/div_config.sh $(SRC) $(@:.v=)
+	sbt "runMain $(@:.v=).$(@:.v=)_driver --target-dir $(BUILD)"
 	cp $(BUILD)/$@ $(RTL)
 
 clean:
