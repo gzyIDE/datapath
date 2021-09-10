@@ -5,6 +5,7 @@ import chisel3.stage.ChiselStage
 
 class DivBase(inData: Int, usrData: Int, stages: Int) extends Module {
   val io = IO(new Bundle {
+    val stop = Input(Bool())
     val in1 = Input(UInt(inData.W))
     val in2 = Input(UInt(inData.W))
     val in_usr = Input(UInt(usrData.W))
@@ -78,13 +79,36 @@ class DivBase(inData: Int, usrData: Int, stages: Int) extends Module {
       next_op := false.B
     }
 
-    if ( i % stages == 0 ) {
-      in1_vec(i) := RegNext(next_in1, 0.U(inData.W))
-      in2_vec(i) := RegNext(next_in2, 0.U(inData.W))
-      quo_vec(i) := RegNext(next_quo, 0.U(inData.W))
-      rem_vec(i) := RegNext(next_rem, 0.U(inData.W))
-      usr_vec(i) := RegNext(next_usr, 0.U(usrData.W))
-      op_valid(i) := RegNext(next_op, false.B)
+    // number of logics within a stage := inData / stages
+    val logics:Int = inData / stages
+    if ( i % logics == logics/2 ) {
+      val reg_in1 = Wire(UInt(inData.W))
+      val reg_in2 = Wire(UInt(inData.W))
+      val reg_quo = Wire(UInt(inData.W))
+      val reg_rem = Wire(UInt(inData.W))
+      val reg_usr = Wire(UInt(usrData.W))
+      val reg_op = Wire(Bool())
+      when ( io.stop ) {
+        reg_in1 := in1_vec(i)
+        reg_in2 := in2_vec(i)
+        reg_quo := quo_vec(i)
+        reg_rem := rem_vec(i)
+        reg_usr := usr_vec(i)
+        reg_op := op_valid(i)
+      } otherwise {
+        reg_in1 := next_in1
+        reg_in2 := next_in2
+        reg_quo := next_quo
+        reg_rem := next_rem
+        reg_usr := next_usr
+        reg_op := next_op
+      }
+      in1_vec(i) := RegNext(reg_in1, 0.U(inData.W))
+      in2_vec(i) := RegNext(reg_in2, 0.U(inData.W))
+      quo_vec(i) := RegNext(reg_quo, 0.U(inData.W))
+      rem_vec(i) := RegNext(reg_rem, 0.U(inData.W))
+      usr_vec(i) := RegNext(reg_usr, 0.U(usrData.W))
+      op_valid(i) := RegNext(reg_op, false.B)
     } else {
       in1_vec(i) := next_in1
       in2_vec(i) := next_in2
