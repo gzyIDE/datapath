@@ -30,6 +30,7 @@ module div64_l8_u5_gznk_test;
 	wire			io_div_by_zero;
 	wire			io_out_en;
 
+	logic tmp_timing;
 	div64_l8_u5_gznk div0 (
 		.*
 	);
@@ -41,37 +42,44 @@ module div64_l8_u5_gznk_test;
 	//***** Simulation Body
 	int i;
 	initial begin
-		reset = `Enable;
-		clock = `Low;
-		io_stop = `Low;
-		io_in1 = `Zero;
-		io_in2 = `Zero;
-		io_in_usr = `Zero;
-		io_in_en = `Disable;
+		reset     <= `Enable;
+		clock     <= `Low;
+		io_stop   <= `Low;
+		io_in1    <= `Zero;
+		io_in2    <= `Zero;
+		io_in_usr <= `Zero;
+		io_in_en  <= `Disable;
+		tmp_timing <= 0;
 		repeat(5) @(posedge clock);
-		reset = `Disable;
+		reset     <= `Disable;
+		repeat(10) @(posedge clock);
 
 		for ( i = 0; i < 1000; i = i + 1 ) begin
-			io_in1 = $random();
-			io_in2 = $random();
-			io_in_en = 1'b1;
+			io_in1   <= ($random()&32'hffffffff) + ($random() << 32);
+			io_in2   <= ($random()&32'hffffffff) + ($random() << 32);
+			io_in_en <= 1'b1;
 			@(posedge clock);
-			io_in_en = 1'b0;
+			io_in_en <= 1'b0;
 			while(!io_out_en) @(posedge clock);
 			if ( (io_in1 / io_in2) != io_quotient ) begin
 				`SetCharBold
 				`SetCharRed
-				$display("Error: %x / %x", io_in1, io_in2);
+				$display("Error in quotient : %x / %x", io_in1, io_in2);
+				$display("    result   : %x", io_quotient);
+				$display("    expected : %x", (io_in1 / io_in2));
 				`ResetCharSetting
 			end
 			if ( (io_in1 % io_in2) != io_remainder) begin
 				`SetCharBold
 				`SetCharRed
-				$display("Error: %x / %x", io_in1, io_in2);
+				$display("Error in remainder : %x / %x", io_in1, io_in2);
+				$display("    result   : %x", io_remainder);
+				$display("    expected : %x", (io_in1 % io_in2));
 				`ResetCharSetting
 			end
 
 			repeat(5) @(posedge clock);
+			tmp_timing <= 0;
 		end
 
 		$finish;

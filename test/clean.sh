@@ -75,10 +75,11 @@ else if ( $SIM_TOOL =~ "xilinx_sim" ) then
 	echo "Removing Vivado-related log files"
 	rm -f vivado*.jou >& /dev/null
 	rm -f vivado*.log >& /dev/null
+	rm -f vivado*.str >& /dev/null
 	#rm -f *.wdb
 
 	pushd xilinx > /dev/null
-	foreach file ( `ls` )
+	foreach file ( `\ls` )
 		if ( -d $file ) then
 			rm -rf $file
 		endif

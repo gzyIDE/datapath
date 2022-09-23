@@ -6,7 +6,9 @@ source ${tcldir}/${TOP}/defines.tcl
 set TEST_MODULE ${TOP}_test
 
 # Configure project for simulations
-create_project -force ${TOP} ./xilinx/${TOP}
+if {[open_project -quiet ./xilinx/${TOP}/${TOP}.xpr] == {}} {
+	create_project -force ${TOP} ./xilinx/${TOP}
+}
 if {[string equal [get_filesets -quiet sources_1] ""]} {
     create_fileset -srcset sources_1
 }
@@ -36,3 +38,6 @@ if { $WAVEFORM == 1 } {
 
 # simulation
 launch_simulation
+
+current_project
+close_project
