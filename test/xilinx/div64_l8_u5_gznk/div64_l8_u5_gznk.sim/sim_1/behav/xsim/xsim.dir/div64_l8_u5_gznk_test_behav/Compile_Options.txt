@@ -1,0 +1,1 @@
+--incr --debug "all" --relax --mt "8" -d "SIMULATION=" -d "WAVE_DUMP=" -L "xil_defaultlib" -L "uvm" -L "unisims_ver" -L "unimacro_ver" -L "secureip" --snapshot "div64_l8_u5_gznk_test_behav" "xil_defaultlib.div64_l8_u5_gznk_test" "xil_defaultlib.glbl" -log "elaborate.log" -debug "all" 
