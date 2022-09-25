@@ -39,8 +39,6 @@ class DivBase(inData: Int, usrData: Int, stages: Int) extends Module {
   }
 
   for ( i <- 1 until inData ) {
-    //val rem_wire = Wire(Vec(inData, UInt(inData.W)))
-    //val quo_wire = Wire(Vec(inData, UInt(inData.W)))
     val rem_sft = Wire(UInt(inData.W))
     val rem_tmp = Wire(UInt(inData.W))
     val rem_new = Wire(UInt(inData.W))
@@ -63,24 +61,15 @@ class DivBase(inData: Int, usrData: Int, stages: Int) extends Module {
     val next_rem = Wire(UInt(inData.W))
     val next_usr = Wire(UInt(usrData.W))
     val next_op = Wire(Bool())
-    when ( op_valid(i-1) ) {
-      next_in1 := in1_vec(i-1)
-      next_in2 := in2_vec(i-1)
-      next_quo := quo_new
-      next_rem := rem_new
-      next_usr := usr_vec(i-1)
-      next_op := op_valid(i-1)
-    } otherwise {
-      next_in1 := 0.U(inData.W)
-      next_in2 := 0.U(inData.W)
-      next_quo := 0.U(inData.W)
-      next_rem := 0.U(inData.W)
-      next_usr := 0.U(usrData.W)
-      next_op := false.B
-    }
+    next_in1 := in1_vec(i-1)
+    next_in2 := in2_vec(i-1)
+    next_quo := quo_new
+    next_rem := rem_new
+    next_usr := usr_vec(i-1)
+    next_op  := op_valid(i-1)
 
     // number of logics within a stage := inData / stages
-    val logics:Int = inData / stages
+    val logics:Int = inData / (stages-1)
     if ( i % logics == logics/2 ) {
       val reg_in1 = Wire(UInt(inData.W))
       val reg_in2 = Wire(UInt(inData.W))
@@ -94,34 +83,42 @@ class DivBase(inData: Int, usrData: Int, stages: Int) extends Module {
         reg_quo := quo_vec(i)
         reg_rem := rem_vec(i)
         reg_usr := usr_vec(i)
-        reg_op := op_valid(i)
+        reg_op  := op_valid(i)
       } otherwise {
-        reg_in1 := next_in1
-        reg_in2 := next_in2
-        reg_quo := next_quo
-        reg_rem := next_rem
-        reg_usr := next_usr
-        reg_op := next_op
+        when ( !next_op ) {
+          reg_in1 := 0.U(inData.W)
+          reg_in2 := 0.U(inData.W)
+          reg_quo := 0.U(inData.W)
+          reg_rem := 0.U(inData.W)
+        } otherwise {
+          reg_in1 := next_in1
+          reg_in2 := next_in2
+          reg_quo := next_quo
+          reg_rem := next_rem
+        }
+        reg_usr := 0.U(inData.W)
+        reg_op  := next_op
       }
-      in1_vec(i) := RegNext(reg_in1, 0.U(inData.W))
-      in2_vec(i) := RegNext(reg_in2, 0.U(inData.W))
-      quo_vec(i) := RegNext(reg_quo, 0.U(inData.W))
-      rem_vec(i) := RegNext(reg_rem, 0.U(inData.W))
-      usr_vec(i) := RegNext(reg_usr, 0.U(usrData.W))
-      op_valid(i) := RegNext(reg_op, false.B)
+
+      in1_vec(i)  := RegNext(reg_in1)
+      in2_vec(i)  := RegNext(reg_in2)
+      quo_vec(i)  := RegNext(reg_quo)
+      rem_vec(i)  := RegNext(reg_rem)
+      usr_vec(i)  := RegNext(reg_usr)
+      op_valid(i) := RegNext(reg_op)
     } else {
-      in1_vec(i) := next_in1
-      in2_vec(i) := next_in2
-      quo_vec(i) := next_quo
-      rem_vec(i) := next_rem
-      usr_vec(i) := next_usr
+      in1_vec(i)  := next_in1
+      in2_vec(i)  := next_in2
+      quo_vec(i)  := next_quo
+      rem_vec(i)  := next_rem
+      usr_vec(i)  := next_usr
       op_valid(i) := next_op
     }
   }
 
-  io.quotient := quo_vec(inData-1)
-  io.remainder := rem_vec(inData-1)
-  io.out_usr := usr_vec(inData-1)
-  io.div_by_zero := in2_vec(inData-1) === 0.U(inData.W)
-  io.out_en := op_valid(inData-1)
+  io.quotient     := RegNext(quo_vec(inData-1))
+  io.remainder    := RegNext(rem_vec(inData-1))
+  io.out_usr      := RegNext(usr_vec(inData-1))
+  io.div_by_zero  := RegNext(op_valid(inData-1) && (in2_vec(inData-1) === 0.U(inData.W)))
+  io.out_en       := RegNext(op_valid(inData-1))
 }
