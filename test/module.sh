@@ -1,7 +1,9 @@
 #!/bin/tcsh
 
 switch ( $TOP_MODULE )
-	case "div64_l8_u5_gznk" :
+	default : 
+		# Error
+		echo $TOP_MODULE " > Use default setup"
 		set TEST_FILE = ${TBDIR}/${TOP_MODULE}_test.sv
 		if ( $GATE =~ 1 ) then
 			set RTL_FILE = ( \
@@ -13,12 +15,6 @@ switch ( $TOP_MODULE )
 				${RTLDIR}/${TOP_MODULE}.v \
 			)
 		endif
-	breaksw
-
-	default : 
-		# Error
-		echo "Invalid Module"
-		exit 1
 	breaksw
 endsw
 

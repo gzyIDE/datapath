@@ -27,7 +27,7 @@ set_property verilog_define ${DEFINE_LISTS} [get_filesets sim_1]
 
 # set simulation configuration
 set_property -name {xsim.simulate.runtime} -value {1000us} -objects [get_filesets sim_1]
-set_property -name {xsim.elaborate.mt_level} -value {8} -objects [get_filesets sim_1]
+#set_property -name {xsim.elaborate.mt_level} -value {8} -objects [get_filesets sim_1]
 if { $WAVEFORM == 1 } {
 	set_property -name {xsim.elaborate.debug_level} -value {all} -objects [get_filesets sim_1]
 	set_property -name xelab.more_options -value {-debug all} -objects [get_filesets sim_1]
@@ -38,6 +38,4 @@ if { $WAVEFORM == 1 } {
 
 # simulation
 launch_simulation
-
-current_project
 close_project
